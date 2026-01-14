@@ -2,7 +2,7 @@
 # Frontend Service - Serves HTML/CSS/JS
 # Listens on port 8003
 
-PORT=8003
+PORT="${PORT:-8003}"
 
 html_page() {
 cat << 'HTMLEOF'

@@ -2,11 +2,11 @@
 # API Gateway - Routes requests to microservices
 # Listens on port 8000
 
-PORT=8000
-TODO_HOST="localhost"
-TODO_PORT=8002
-FRONTEND_HOST="localhost"
-FRONTEND_PORT=8003
+PORT="${PORT:-8000}"
+TODO_HOST="${TODO_HOST:-localhost}"
+TODO_PORT="${TODO_PORT:-8002}"
+FRONTEND_HOST="${FRONTEND_HOST:-localhost}"
+FRONTEND_PORT="${FRONTEND_PORT:-8003}"
 
 # Forward request to backend service
 forward() {

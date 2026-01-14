@@ -2,8 +2,8 @@
 # Storage Service - Handles file-based persistence for todos
 # Listens on port 8001
 
-PORT=8001
-DATA_DIR="/mnt/d/git/github/vibe-todo/todo-microservices/data"
+PORT="${PORT:-8001}"
+DATA_DIR="${DATA_DIR:-/data}"
 TODOS_FILE="$DATA_DIR/todos.json"
 
 mkdir -p "$DATA_DIR"
