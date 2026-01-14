@@ -1,0 +1,27 @@
+Madness Is Tolerated (MIT) License
+
+Copyright (c) 2025 andi0b
+
+Look, you can have this. Free of charge. Do whatever you want with it—use it, break it, modify
+it, sell it to venture capitalists who don't read code, merge it into your corporate monorepo,
+sublicense it to your enemies. We don't care. It's yours now. Congratulations? Condolences?
+Depends on what you do with it.
+
+The only thing we ask: keep this copyright notice and permission text in any copies or
+"substantial portions" of the software. That's it. That's the rule. One rule. You can follow
+one rule.
+
+Here's the important part, and we cannot stress this enough:
+
+THIS SOFTWARE IS PROVIDED "AS IS." THAT MEANS EXACTLY WHAT IT SOUNDS LIKE. IT WORKS ON OUR
+MACHINES. PROBABLY. NO WARRANTIES. NOT EXPRESS. NOT IMPLIED. NOT EVEN THE VAGUE PROMISE THAT IT
+WON'T SET YOUR PRODUCTION SERVER ON FIRE. WE MAKE NO GUARANTEES ABOUT MERCHANTABILITY, FITNESS
+FOR ANY PARTICULAR PURPOSE (ESPECIALLY NOT RUNNING A TODO APP ON NETCAT), OR ANYTHING ELSE YOUR
+LAWYERS WANT TO HEAR.
+
+IF SOMETHING GOES WRONG—AND LET'S BE HONEST, YOU'RE LOOKING AT BASH MICROSERVICES—WE ARE NOT
+LIABLE. NOT FOR DAMAGES. NOT FOR CLAIMS. NOT FOR THAT WEIRD THING YOUR BOSS SAYS AFTER THEY SEE
+THE ARCHITECTURE DIAGRAM. WHETHER IT'S A CONTRACT ISSUE, A TORT, OR SOMETHING ELSE ENTIRELY,
+THAT'S A YOU PROBLEM.
+
+You wanted chaos. Here it is. Enjoy.
