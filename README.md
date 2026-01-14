@@ -36,6 +36,7 @@ Four microservices. For a todo list. Running on netcat. Because obviously.
 
 - Bash (the only dependency that matters)
 - `nc` (netcat) - your enterprise-grade HTTP server
+- Docker (optional, for running in containers without Dockerfiles)
 - A complete disregard for conventional software engineering practices
 - The audacity
 
@@ -55,6 +56,19 @@ Or if you're a filthy monolith enthusiast:
 ```
 
 Then go to `http://localhost:8080` like it's 1999.
+
+## Running with Docker
+
+For those who want containers but refuse to write Dockerfiles:
+
+```bash
+./docker-build.sh           # Build images using docker create/commit (no Dockerfiles)
+./docker-compose.sh up -d   # Start the stack (YAML not invited)
+./docker-compose.sh ps      # Admire your orchestration
+./docker-compose.sh down    # Tear it all down
+```
+
+Your Docker Desktop won't suspect a thing - it sees a respectable compose project.
 
 ## Stopping
 
