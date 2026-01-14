@@ -58,7 +58,7 @@ handle() {
     case "$path" in
         /|/index.html)
             local response=$(forward "$FRONTEND_HOST" "$FRONTEND_PORT" "GET" "/")
-            local html=$(printf '%s\n' "$response" | sed '1,/^$/d')
+            local html=$(printf '%s\n' "$response" | sed '1,/^\r*$/d')
             respond "200 OK" "text/html" "$html"
             ;;
         /api/todos|/api/todos/*)
