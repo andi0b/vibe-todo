@@ -1,0 +1,6 @@
+# Ignore Claude settings
+.claude/
+
+# Ignore temp files
+*.tmp
+*.pipe
