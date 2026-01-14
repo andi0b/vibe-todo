@@ -32,8 +32,8 @@ start_service() {
     sleep 0.3
 }
 
-# Reset data
-echo '[]' > "$BASE_DIR/data/todos.json"
+# Initialize data file if missing or empty
+[[ ! -s "$BASE_DIR/data/todos.json" ]] && echo '[]' > "$BASE_DIR/data/todos.json"
 
 # Start services in order
 start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh"
