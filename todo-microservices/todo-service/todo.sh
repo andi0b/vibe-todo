@@ -2,9 +2,9 @@
 # Todo Service - Business logic for todo operations
 # Listens on port 8002, uses Storage Service on 8001
 
-PORT=8002
-STORAGE_HOST="localhost"
-STORAGE_PORT=8001
+PORT="${PORT:-8002}"
+STORAGE_HOST="${STORAGE_HOST:-localhost}"
+STORAGE_PORT="${STORAGE_PORT:-8001}"
 
 # Call storage service and return response body
 storage_call() {
