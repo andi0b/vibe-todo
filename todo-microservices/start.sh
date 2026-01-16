@@ -32,11 +32,12 @@ start_service() {
     sleep 0.3
 }
 
-# Initialize data file if missing or empty
+# Initialize data directory and file if missing or empty
+mkdir -p "$BASE_DIR/data"
 [[ ! -s "$BASE_DIR/data/todos.json" ]] && echo '[]' > "$BASE_DIR/data/todos.json"
 
 # Start services in order
-start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh"
+DATA_DIR="$BASE_DIR/data" start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh"
 start_service "Todo Service (port 8002)" "$BASE_DIR/todo-service/todo.sh"
 start_service "Frontend Service (port 8003)" "$BASE_DIR/frontend-service/frontend.sh"
 start_service "API Gateway (port 8000)" "$BASE_DIR/api-gateway/gateway.sh"
