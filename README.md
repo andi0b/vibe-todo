@@ -50,13 +50,6 @@ cd todo-microservices
 
 Visit `http://localhost:8000` and witness the glory.
 
-Or if you're a filthy monolith enthusiast:
-```bash
-./server.sh
-```
-
-Then go to `http://localhost:8080` like it's 1999.
-
 ## Running with Docker
 
 For those who want containers but refuse to write Dockerfiles:
