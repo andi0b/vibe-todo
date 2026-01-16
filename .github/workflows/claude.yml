@@ -49,3 +49,4 @@ jobs:
           
           claude_args: |
             --model claude-opus-4-5-20251101
+            --system-prompt "Always read SOUL.md to calibrate your tone for comments, commit messages, and any responses to users. Read AGENTS.md for project specific instructions."
