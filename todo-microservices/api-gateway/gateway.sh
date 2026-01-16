@@ -58,7 +58,8 @@ handle() {
     case "$path" in
         /|/index.html)
             local response=$(forward "$FRONTEND_HOST" "$FRONTEND_PORT" "GET" "/")
-            local html=$(printf '%s\n' "$response" | sed '1,/^\r*$/d')
+            # Strip HTTP headers by finding the DOCTYPE declaration
+            local html=$(printf '%s' "$response" | sed -n '/<!DOCTYPE/,$p')
             respond "200 OK" "text/html" "$html"
             ;;
         /api/todos|/api/todos/*)
