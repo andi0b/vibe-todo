@@ -41,8 +41,9 @@ handle() {
             status="404 Not Found"; body_out='{"error":"not found"}' ;;
     esac
 
+    local byte_len=$(printf '%s' "$body_out" | wc -c)
     printf "HTTP/1.1 %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n%s" \
-        "$status" "${#body_out}" "$body_out"
+        "$status" "$byte_len" "$body_out"
 }
 
 serve() {
