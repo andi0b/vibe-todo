@@ -93,9 +93,10 @@ HTMLEOF
 
 respond() {
     local status="$1" ctype="$2" body="$3"
+    local byte_len=$(printf '%s' "$body" | wc -c)
     printf "HTTP/1.1 %s\r\n" "$status"
     printf "Content-Type: %s\r\n" "$ctype"
-    printf "Content-Length: %d\r\n" "${#body}"
+    printf "Content-Length: %d\r\n" "$byte_len"
     printf "Connection: close\r\n"
     printf "\r\n%s" "$body"
 }
