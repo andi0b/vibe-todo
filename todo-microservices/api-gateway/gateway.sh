@@ -7,6 +7,8 @@ TODO_HOST="${TODO_HOST:-localhost}"
 TODO_PORT="${TODO_PORT:-8002}"
 FRONTEND_HOST="${FRONTEND_HOST:-localhost}"
 FRONTEND_PORT="${FRONTEND_PORT:-8003}"
+LLM_HOST="${LLM_HOST:-localhost}"
+LLM_PORT="${LLM_PORT:-8004}"
 
 # Forward request to backend service
 forward() {
@@ -65,6 +67,15 @@ handle() {
         /api/todos|/api/todos/*)
             local todo_path="${path#/api}"
             local response=$(forward "$TODO_HOST" "$TODO_PORT" "$method" "$todo_path" "$body")
+            local json=$(printf '%s\n' "$response" | tail -1)
+            local status=$(printf '%s\n' "$response" | head -1 | cut -d' ' -f2-3)
+            respond "${status:-200 OK}" "application/json" "$json"
+            ;;
+        /api/llm|/api/llm/*)
+            # Route LLM requests - the bash transformer awaits
+            local llm_path="${path#/api/llm}"
+            [[ -z "$llm_path" ]] && llm_path="/"
+            local response=$(forward "$LLM_HOST" "$LLM_PORT" "$method" "$llm_path" "$body")
             local json=$(printf '%s\n' "$response" | tail -1)
             local status=$(printf '%s\n' "$response" | head -1 | cut -d' ' -f2-3)
             respond "${status:-200 OK}" "application/json" "$json"

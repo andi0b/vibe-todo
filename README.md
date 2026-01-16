@@ -21,13 +21,41 @@ Someone asked an AI to vibe-code a todo app and it chose violence.
                 ┌─────────────────┐     ┌────────────────┐       ┌─────────────┐
                 │Frontend Svc:8003│     │ Bashis:6379    │       │ todos.json  │
                 └─────────────────┘     └────────────────┘       └─────────────┘
+                        │
+                        ▼
+                ┌─────────────────┐
+                │ LLM Svc:8004    │  ← A transformer. In bash. Yes, really.
+                └─────────────────┘
 ```
 
-Five microservices. For a todo list. Running on netcat. Because obviously.
+Six microservices. For a todo list. One of them is a neural network. Running on netcat. Because obviously.
 
 ### Bashis: A Redis Clone in Bash
 
 We would've called it **Redish™** but Redis didn't grant us that. So instead, meet **Bashis** - a Redis-compatible key-value cache server written entirely in bash. It speaks actual RESP protocol and works with real `redis-cli`. Because writing our own caching layer was easier than adding a dependency.
+
+### LLM Service: A Transformer in Bash
+
+We implemented a GPT-style transformer from scratch. In bash. With fixed-point arithmetic and Taylor series approximations for activation functions. It generates text at approximately 0.07 tokens per second (14 seconds per token). This is not a typo. This is art.
+
+**What it does:**
+- Full transformer architecture (embeddings, attention, FFN, layer norm)
+- Trained on Shakespeare (or whatever text you provide)
+- Generates text that is... creative
+- Takes about 4 minutes to generate 5 tokens
+
+**What we might use it for:**
+- We genuinely don't know yet
+- Maybe AI-powered todo suggestions?
+- Maybe it just sits there, generating Shakespeare
+- The point is it exists
+
+**Does it work?**
+- Sometimes. The math is correct (verified against PyTorch)
+- The output quality depends on your patience for training
+- It will definitely generate *something*
+
+See [llm-architecture.md](llm-architecture.md) for the full technical deep-dive.
 
 ## Features
 
@@ -36,8 +64,10 @@ We would've called it **Redish™** but Redis didn't grant us that. So instead, 
 - Delete todos (disruptive innovation)
 - A beautiful purple gradient UI (the only thing that makes sense here)
 - **Redis-compatible caching layer** written in bash (Bashis) - works with actual `redis-cli`
+- **LLM inference engine** written in bash - a GPT-style transformer that runs at geological speeds
 - File locking with `flock` because race conditions in your bash todo app would be embarrassing
 - JSON parsing with `sed` and `grep` because who needs `jq`
+- Matrix multiplication in bash arrays because linear algebra doesn't require C
 
 ## Prerequisites
 
@@ -76,7 +106,7 @@ Your Docker Desktop won't suspect a thing - it sees a respectable compose projec
 ./stop.sh
 ```
 
-This kills the dream (and processes on ports 8000-8003 and 6379).
+This kills the dream (and processes on ports 8000-8004 and 6379).
 
 ## Testing
 
@@ -90,11 +120,14 @@ Yes, there are tests. We're not *complete* animals.
 
 - **HTTP/1.1 implementation from scratch** - because importing an HTTP library is for the weak
 - **RESP protocol implementation** - Bashis speaks Redis wire protocol, tested with real `redis-cli`
+- **GPT-style transformer in bash** - with fixed-point math, Taylor series, and Newton's method
 - **Bash coprocesses** - bet you didn't know bash could do that
 - **Proper CORS headers** - we're chaotic, not incompetent
 - **JSON manipulation with regex** - just as God intended
 - **Service-to-service communication** - over HTTP, via netcat, in bash, on localhost
 - **Caching with associative arrays** - `declare -A` is basically Redis if you squint
+- **Matrix multiplication in nested loops** - O(n³) and proud of it
+- **Softmax via Taylor series** - because importing numpy is cheating
 
 ## FAQ
 

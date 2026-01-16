@@ -119,17 +119,25 @@ cmd_up() {
     run_service "frontend" "$IMAGE_PREFIX-frontend-service"
     wait_for_service "frontend" 8003
 
+    # LLM service (the bash transformer - may or may not work, that's part of the fun)
+    run_service "llm" "$IMAGE_PREFIX-llm-service" \
+        -e "MODEL_DIR=/app/model"
+    wait_for_service "llm" 8004 || log_up "LLM service slow to start (loading model) - this is normal"
+
     # API Gateway
     run_service "gateway" "$IMAGE_PREFIX-api-gateway" \
         -p "8000:8000" \
         -e "TODO_HOST=todo" \
         -e "TODO_PORT=8002" \
         -e "FRONTEND_HOST=frontend" \
-        -e "FRONTEND_PORT=8003"
+        -e "FRONTEND_PORT=8003" \
+        -e "LLM_HOST=llm" \
+        -e "LLM_PORT=8004"
     wait_for_service "gateway" 8000
 
     echo ""
     log_up "All services running on http://localhost:8000"
+    log_up "LLM API available at http://localhost:8000/api/llm/generate (patience required)"
     echo ""
     cmd_ps
 

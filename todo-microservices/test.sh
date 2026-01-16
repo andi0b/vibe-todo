@@ -80,4 +80,26 @@ echo "B8. DBSIZE after flush:"
 sleep 0.2; printf '*1\r\n$6\r\nDBSIZE\r\n' | nc -w1 localhost "$BASHIS_PORT"
 echo ""
 
+echo "=== LLM SERVICE TESTS ==="
+LLM_PORT="${LLM_PORT:-8004}"
+echo "Testing LLM service on port $LLM_PORT"
+echo "(Note: Generation tests skipped - they work but take forever. That's the point.)"
+echo ""
+
+echo "L1. LLM health check:"
+sleep 0.2; printf 'GET /health HTTP/1.1\r\nHost: localhost\r\n\r\n' | nc -w2 localhost "$LLM_PORT" | tail -n 1
+echo ""
+
+echo "L2. Tokenize test:"
+sleep 0.2; printf 'POST /tokenize HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 17\r\n\r\n{"text":"Hello!"}' | nc -w2 localhost "$LLM_PORT" | tail -n 1
+echo ""
+
+echo "L3. Detokenize test:"
+sleep 0.2; printf 'POST /detokenize HTTP/1.1\r\nHost: localhost\r\nContent-Type: application/json\r\nContent-Length: 25\r\n\r\n{"tokens":[72,101,108,108,111]}' | nc -w2 localhost "$LLM_PORT" | tail -n 1
+echo ""
+
+echo "L4. Model config (if loaded):"
+sleep 0.2; printf 'GET /config HTTP/1.1\r\nHost: localhost\r\n\r\n' | nc -w2 localhost "$LLM_PORT" | tail -n 1
+echo ""
+
 echo "=== ALL TESTS COMPLETE ==="

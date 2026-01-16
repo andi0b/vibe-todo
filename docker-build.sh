@@ -104,5 +104,39 @@ build_service "todo-service" "todo.sh"
 build_service "frontend-service" "frontend.sh"
 build_service "api-gateway" "gateway.sh"
 
+# LLM service needs special handling (multiple files + model)
+build_llm_service() {
+    local name="llm-service"
+    local svc_dir="$SERVICE_DIR/$name"
+
+    log "Building $IMAGE_PREFIX-$name (the transformer in bash)"
+    step=0
+    image_id=""
+
+    build_layer FROM "$BASE_IMAGE"
+    build_layer RUN "apk add --no-cache bash netcat-openbsd"
+    build_layer WORKDIR "/app"
+
+    # Copy lib directory
+    build_layer COPY "$svc_dir/lib" "/app/lib"
+    build_layer RUN "chmod +x /app/lib/*.sh"
+
+    # Copy main script
+    build_layer COPY "$svc_dir/llm.sh" "/app/llm.sh"
+    build_layer RUN "chmod +x /app/llm.sh"
+
+    # Copy model if it exists (optional - can mount at runtime)
+    if [[ -d "$svc_dir/model" ]]; then
+        build_layer COPY "$svc_dir/model" "/app/model"
+    fi
+
+    build_layer CMD "[\"/app/llm.sh\"]"
+
+    tag_image "$IMAGE_PREFIX-$name"
+    echo ""
+}
+
+build_llm_service
+
 log "All images built. Dockerfiles remain unwritten."
 docker images | grep "$IMAGE_PREFIX"
