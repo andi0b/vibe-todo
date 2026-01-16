@@ -121,18 +121,31 @@ fp_exp() {
     [[ $x -gt $((8 * SCALE)) ]] && x=$((8 * SCALE))
     [[ $x -lt $((-8 * SCALE)) ]] && { echo 0; return; }
 
+    # For negative x, compute 1/exp(-x) for better precision
+    local neg=0
+    if [[ $x -lt 0 ]]; then
+        neg=1
+        x=$((-x))
+    fi
+
     local result=$SCALE  # 1.0
     local term=$SCALE    # Current term
     local i
 
-    for ((i=1; i<=12; i++)); do
+    for ((i=1; i<=15; i++)); do
         # term = term * x / i
         term=$(( (term * x) / (i * SCALE) ))
         result=$((result + term))
 
         # Stop if term is negligible
-        [[ ${term#-} -lt 1 ]] && break
+        [[ $term -lt 1 ]] && break
     done
+
+    # For negative x, return 1/exp(-x)
+    if [[ $neg -eq 1 ]]; then
+        [[ $result -eq 0 ]] && { echo 0; return; }
+        result=$(( (SCALE * SCALE) / result ))
+    fi
 
     echo "$result"
 }
