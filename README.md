@@ -8,6 +8,8 @@ This is a **fully-featured todo list application** built entirely in bash script
 
 Someone asked an AI to vibe-code a todo app and it chose violence.
 
+![screenshot](screenshot.png)
+
 ## Architecture
 
 ```

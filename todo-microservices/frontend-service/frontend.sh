@@ -109,7 +109,7 @@ cat << 'HTMLEOF'
             background: var(--ctp-surface2);
             border-color: var(--ctp-green);
         }
-        .todo-list { list-style: none; max-height: 400px; overflow-y: auto; }
+        .todo-list { list-style: none; max-height: 66vh; overflow-y: auto; }
         .todo-item {
             display: flex;
             align-items: center;
