@@ -204,29 +204,37 @@ cat << 'HTMLEOF'
     </div>
     <script>
         const API = '/api/todos';
+        let todos = [];
+
+        function render() {
+            const list = document.getElementById('list');
+            const stats = document.getElementById('stats');
+            if (!todos.length) {
+                list.innerHTML = '<li class="empty">no todos yet. the terminal awaits...</li>';
+                stats.textContent = '';
+                return;
+            }
+            list.innerHTML = todos.map(t =>
+                '<li class="todo-item' + (t.completed ? ' done' : '') + '">' +
+                '<div class="checkbox" onclick="toggle(' + t.id + ')"></div>' +
+                '<span class="text">' + esc(t.title) + '</span>' +
+                '<button class="delete" onclick="del(' + t.id + ')">[x]</button>' +
+                '</li>'
+            ).join('');
+            const done = todos.filter(t => t.completed).length;
+            stats.innerHTML = '<span class="count">' + done + '</span> of <span class="count">' + todos.length + '</span> completed' + (done > 0 ? ' ★'.repeat(Math.min(done, 5)) : '');
+        }
+
         async function load() {
             try {
                 const r = await fetch(API);
-                const todos = await r.json();
-                const list = document.getElementById('list');
-                const stats = document.getElementById('stats');
-                if (!todos.length) {
-                    list.innerHTML = '<li class="empty">no todos yet. the terminal awaits...</li>';
-                    stats.textContent = '';
-                    return;
-                }
-                list.innerHTML = todos.map(t =>
-                    '<li class="todo-item' + (t.completed ? ' done' : '') + '">' +
-                    '<div class="checkbox" onclick="toggle(' + t.id + ')"></div>' +
-                    '<span class="text">' + esc(t.title) + '</span>' +
-                    '<button class="delete" onclick="del(' + t.id + ')">[x]</button>' +
-                    '</li>'
-                ).join('');
-                const done = todos.filter(t => t.completed).length;
-                stats.innerHTML = '<span class="count">' + done + '</span> of <span class="count">' + todos.length + '</span> completed' + (done > 0 ? ' ★'.repeat(Math.min(done, 5)) : '');
+                todos = await r.json();
+                render();
             } catch(e) { console.error('Load failed:', e); }
         }
+
         function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
         async function add(e) {
             e.preventDefault();
             const i = document.getElementById('input');
@@ -235,7 +243,22 @@ cat << 'HTMLEOF'
             i.value = '';
             load();
         }
-        async function toggle(id) { await fetch(API + '/' + id + '/toggle', { method: 'POST' }); load(); }
+
+        async function toggle(id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+            const newState = !todo.completed;
+            // Optimistic update - flip it now, ask questions later
+            todo.completed = newState;
+            render();
+            // Fire off the request and reload in background
+            fetch(API + '/' + id, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({completed: newState})
+            }).then(r => { if (r.ok) load(); });
+        }
+
         async function del(id) { await fetch(API + '/' + id, { method: 'DELETE' }); load(); }
         load();
     </script>

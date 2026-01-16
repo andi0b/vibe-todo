@@ -42,18 +42,12 @@ add_todo() {
     printf '%s' "$new_todo"
 }
 
-toggle_todo() {
-    local id="$1"
+set_todo_completed() {
+    local id="$1" completed="$2"
     local todos=$(get_todos)
-
-    if printf '%s' "$todos" | grep -q "\"id\":$id,.*\"completed\":false"; then
-        todos=$(printf '%s' "$todos" | sed "s/\(\"id\":$id,[^}]*\"completed\":\)false/\1true/")
-    else
-        todos=$(printf '%s' "$todos" | sed "s/\(\"id\":$id,[^}]*\"completed\":\)true/\1false/")
-    fi
-
+    # No greedy .* nonsense - just set the state directly like a civilized service
+    todos=$(printf '%s' "$todos" | sed "s/\(\"id\":$id,[^}]*\"completed\":\)\(true\|false\)/\1$completed/")
     save_todos "$todos"
-    printf '{"status":"toggled"}'
 }
 
 delete_todo() {
@@ -100,8 +94,18 @@ handle() {
                 else
                     status="400 Bad Request"; body_out='{"error":"title required"}'
                 fi
-            elif [[ "$path" =~ ^/todos/([0-9]+)/toggle$ ]]; then
-                status="200 OK"; body_out=$(toggle_todo "${BASH_REMATCH[1]}")
+            else
+                status="404 Not Found"; body_out='{"error":"not found"}'
+            fi ;;
+        PATCH)
+            if [[ "$path" =~ ^/todos/([0-9]+)$ ]]; then
+                local completed=$(printf '%s' "$body" | sed 's/.*"completed":\(true\|false\).*/\1/')
+                if [[ "$completed" == "true" || "$completed" == "false" ]]; then
+                    set_todo_completed "${BASH_REMATCH[1]}" "$completed"
+                    status="204 No Content"; body_out=""
+                else
+                    status="400 Bad Request"; body_out='{"error":"completed field required (true/false)"}'
+                fi
             else
                 status="404 Not Found"; body_out='{"error":"not found"}'
             fi ;;
@@ -115,7 +119,7 @@ handle() {
     esac
 
     local byte_len=$(printf '%s' "$body_out" | wc -c)
-    printf "HTTP/1.1 %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nConnection: close\r\n\r\n%s" \
+    printf "HTTP/1.1 %s\r\nContent-Type: application/json\r\nContent-Length: %d\r\nAccess-Control-Allow-Origin: *\r\nAccess-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS\r\nAccess-Control-Allow-Headers: Content-Type\r\nConnection: close\r\n\r\n%s" \
         "$status" "$byte_len" "$body_out"
 }
 

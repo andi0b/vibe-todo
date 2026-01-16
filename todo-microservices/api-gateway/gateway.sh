@@ -30,7 +30,7 @@ respond() {
     printf "Content-Type: %s\r\n" "$ctype"
     printf "Content-Length: %d\r\n" "$byte_len"
     printf "Access-Control-Allow-Origin: *\r\n"
-    printf "Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS\r\n"
+    printf "Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS\r\n"
     printf "Access-Control-Allow-Headers: Content-Type\r\n"
     printf "Connection: close\r\n"
     printf "\r\n%s" "$body"
