@@ -16,14 +16,18 @@ Someone asked an AI to vibe-code a todo app and it chose violence.
 ┌─────────┐     ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
 │ Browser │────▶│ API Gateway:8000│────▶│ Todo Service:8002│────▶│Storage Svc:8001 │
 └─────────┘     └─────────────────┘     └──────────────────┘     └─────────────────┘
-                        │                                               │
-                        ▼                                               ▼
-                ┌─────────────────┐                              ┌─────────────┐
-                │Frontend Svc:8003│                              │ todos.json  │
-                └─────────────────┘                              └─────────────┘
+                        │                        │                       │
+                        ▼                        ▼                       ▼
+                ┌─────────────────┐     ┌────────────────┐       ┌─────────────┐
+                │Frontend Svc:8003│     │ Bashis:6379    │       │ todos.json  │
+                └─────────────────┘     └────────────────┘       └─────────────┘
 ```
 
-Four microservices. For a todo list. Running on netcat. Because obviously.
+Five microservices. For a todo list. Running on netcat. Because obviously.
+
+### Bashis: A Redis Clone in Bash
+
+We would've called it **Redish™** but Redis didn't grant us that. So instead, meet **Bashis** - a Redis-compatible key-value cache server written entirely in bash. It speaks actual RESP protocol and works with real `redis-cli`. Because writing our own caching layer was easier than adding a dependency.
 
 ## Features
 
@@ -31,6 +35,7 @@ Four microservices. For a todo list. Running on netcat. Because obviously.
 - Mark todos as complete (groundbreaking)
 - Delete todos (disruptive innovation)
 - A beautiful purple gradient UI (the only thing that makes sense here)
+- **Redis-compatible caching layer** written in bash (Bashis) - works with actual `redis-cli`
 - File locking with `flock` because race conditions in your bash todo app would be embarrassing
 - JSON parsing with `sed` and `grep` because who needs `jq`
 
@@ -71,7 +76,7 @@ Your Docker Desktop won't suspect a thing - it sees a respectable compose projec
 ./stop.sh
 ```
 
-This kills the dream (and processes on ports 8000-8003).
+This kills the dream (and processes on ports 8000-8003 and 6379).
 
 ## Testing
 
@@ -84,10 +89,12 @@ Yes, there are tests. We're not *complete* animals.
 ## Technical Highlights
 
 - **HTTP/1.1 implementation from scratch** - because importing an HTTP library is for the weak
+- **RESP protocol implementation** - Bashis speaks Redis wire protocol, tested with real `redis-cli`
 - **Bash coprocesses** - bet you didn't know bash could do that
 - **Proper CORS headers** - we're chaotic, not incompetent
 - **JSON manipulation with regex** - just as God intended
 - **Service-to-service communication** - over HTTP, via netcat, in bash, on localhost
+- **Caching with associative arrays** - `declare -A` is basically Redis if you squint
 
 ## FAQ
 

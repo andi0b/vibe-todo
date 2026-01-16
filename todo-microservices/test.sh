@@ -48,4 +48,36 @@ echo "10. Final todos:"
 printf 'GET /api/todos HTTP/1.1\r\nHost: localhost\r\n\r\n' | nc -w2 localhost "$PORT" | tail -n 1
 echo ""
 
+echo "=== BASHIS CACHE TESTS ==="
+BASHIS_PORT="${BASHIS_PORT:-6379}"
+echo "Testing Bashis on port $BASHIS_PORT"
+echo ""
+
+echo "B1. Bashis health check (HTTP):"
+sleep 0.2; curl -s "localhost:$BASHIS_PORT/health"
+echo ""
+
+echo "B2. PING (inline command):"
+sleep 0.2; printf 'PING\r\n' | nc -w1 localhost "$BASHIS_PORT"
+
+echo "B3. SET test (RESP):"
+sleep 0.2; printf '*3\r\n$3\r\nSET\r\n$8\r\ntestkey1\r\n$10\r\ntestvalue1\r\n' | nc -w1 localhost "$BASHIS_PORT"
+
+echo "B4. GET test:"
+sleep 0.2; printf '*2\r\n$3\r\nGET\r\n$8\r\ntestkey1\r\n' | nc -w1 localhost "$BASHIS_PORT"
+
+echo "B5. KEYS test:"
+sleep 0.2; printf '*2\r\n$4\r\nKEYS\r\n$1\r\n*\r\n' | nc -w1 localhost "$BASHIS_PORT"
+echo ""
+
+echo "B6. DEL test:"
+sleep 0.2; printf '*2\r\n$3\r\nDEL\r\n$8\r\ntestkey1\r\n' | nc -w1 localhost "$BASHIS_PORT"
+
+echo "B7. FLUSHDB test:"
+sleep 0.2; printf '*1\r\n$7\r\nFLUSHDB\r\n' | nc -w1 localhost "$BASHIS_PORT"
+
+echo "B8. DBSIZE after flush:"
+sleep 0.2; printf '*1\r\n$6\r\nDBSIZE\r\n' | nc -w1 localhost "$BASHIS_PORT"
+echo ""
+
 echo "=== ALL TESTS COMPLETE ==="

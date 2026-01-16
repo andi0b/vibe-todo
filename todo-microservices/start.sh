@@ -17,6 +17,7 @@ cleanup() {
         wait "$pid" 2>/dev/null
     done
     pkill -f "nc -l -p 800" 2>/dev/null
+    pkill -f "nc -l -p 6379" 2>/dev/null
     echo "All services stopped."
     exit 0
 }
@@ -36,8 +37,9 @@ start_service() {
 mkdir -p "$BASE_DIR/data"
 [[ ! -s "$BASE_DIR/data/todos.json" ]] && echo '[]' > "$BASE_DIR/data/todos.json"
 
-# Start services in order
+# Start services in order (Bashis before Todo since Todo uses it for caching)
 DATA_DIR="$BASE_DIR/data" start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh"
+start_service "Bashis Cache (port 6379)" "$BASE_DIR/bashis-service/bashis.sh"
 start_service "Todo Service (port 8002)" "$BASE_DIR/todo-service/todo.sh"
 start_service "Frontend Service (port 8003)" "$BASE_DIR/frontend-service/frontend.sh"
 start_service "API Gateway (port 8000)" "$BASE_DIR/api-gateway/gateway.sh"
@@ -51,13 +53,14 @@ echo "Open http://localhost:8000 in your browser"
 echo ""
 echo "Architecture:"
 echo "  Browser → Gateway:8000 → Todo:8002 → Storage:8001"
-echo "                       ↘ Frontend:8003"
+echo "                       ↘ Frontend:8003  ↘ Bashis:6379"
 echo ""
 echo "Health endpoints:"
 echo "  curl localhost:8000/health  # Gateway"
 echo "  curl localhost:8001/health  # Storage"
 echo "  curl localhost:8002/health  # Todo"
 echo "  curl localhost:8003/health  # Frontend"
+echo "  curl localhost:6379/health  # Bashis (Redis clone)"
 echo ""
 echo "Press Ctrl+C to stop all services"
 echo ""

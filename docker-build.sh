@@ -99,6 +99,7 @@ log "Building images without Dockerfiles because we have principles"
 echo ""
 
 build_service "storage-service" "storage.sh"
+build_service "bashis-service" "bashis.sh"
 build_service "todo-service" "todo.sh"
 build_service "frontend-service" "frontend.sh"
 build_service "api-gateway" "gateway.sh"

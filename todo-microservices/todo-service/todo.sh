@@ -5,6 +5,8 @@
 PORT="${PORT:-8002}"
 STORAGE_HOST="${STORAGE_HOST:-localhost}"
 STORAGE_PORT="${STORAGE_PORT:-8001}"
+BASHIS_HOST="${BASHIS_HOST:-localhost}"
+BASHIS_PORT="${BASHIS_PORT:-6379}"
 
 # Call storage service and return response body
 storage_call() {
@@ -22,9 +24,69 @@ storage_call() {
     printf '%s\n' "$response" | tail -1
 }
 
-get_todos() { storage_call "GET" "/todos"; }
+# Bashis (cache) helpers - speak RESP protocol like civilized software
+bashis_call() {
+    local cmd="$1"
+    shift
+    local args=("$@")
+    local resp=""
+
+    # Build RESP array: *N\r\n$len\r\narg\r\n...
+    local count=$((1 + ${#args[@]}))
+    resp="*${count}\r\n"
+    resp+="\$${#cmd}\r\n${cmd}\r\n"
+    for arg in "${args[@]}"; do
+        resp+="\$${#arg}\r\n${arg}\r\n"
+    done
+
+    # Send to Bashis and get response
+    printf '%b' "$resp" | nc -w1 "$BASHIS_HOST" "$BASHIS_PORT" 2>/dev/null
+}
+
+cache_get() {
+    local key="$1"
+    local response
+    response=$(bashis_call "GET" "$key")
+    # Parse RESP bulk string response: $len\r\ndata\r\n or $-1\r\n for nil
+    if [[ "$response" =~ ^\$-1 ]]; then
+        return 1  # Cache miss
+    elif [[ "$response" =~ ^\$([0-9]+) ]]; then
+        # Extract the data after $len\r\n
+        printf '%s' "$response" | sed -n '2p' | tr -d '\r'
+        return 0
+    fi
+    return 1
+}
+
+cache_set() {
+    local key="$1" value="$2"
+    bashis_call "SET" "$key" "$value" >/dev/null 2>&1
+}
+
+cache_del() {
+    local key="$1"
+    bashis_call "DEL" "$key" >/dev/null 2>&1
+}
+
+get_todos() {
+    # Try cache first
+    local cached
+    if cached=$(cache_get "todos:all"); then
+        printf '%s' "$cached"
+        return
+    fi
+    # Cache miss - fetch from storage and cache it
+    local todos
+    todos=$(storage_call "GET" "/todos")
+    cache_set "todos:all" "$todos"
+    printf '%s' "$todos"
+}
 get_next_id() { storage_call "GET" "/nextid" | grep -oE '[0-9]+' | head -1; }
-save_todos() { storage_call "POST" "/todos" "$1" >/dev/null; }
+save_todos() {
+    storage_call "POST" "/todos" "$1" >/dev/null
+    # Invalidate cache after write
+    cache_del "todos:all"
+}
 
 add_todo() {
     local title="$1"

@@ -103,10 +103,16 @@ cmd_up() {
         -e "DATA_DIR=/data"
     wait_for_service "storage" 8001
 
+    # Bashis cache (Redis clone in bash, because we have no shame)
+    run_service "bashis" "$IMAGE_PREFIX-bashis-service"
+    wait_for_service "bashis" 6379
+
     # Todo service
     run_service "todo" "$IMAGE_PREFIX-todo-service" \
         -e "STORAGE_HOST=storage" \
-        -e "STORAGE_PORT=8001"
+        -e "STORAGE_PORT=8001" \
+        -e "BASHIS_HOST=bashis" \
+        -e "BASHIS_PORT=6379"
     wait_for_service "todo" 8002
 
     # Frontend service
