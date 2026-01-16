@@ -181,6 +181,49 @@ cat << 'HTMLEOF'
             border-radius: 0 0 8px 8px;
         }
         .arch span { color: var(--ctp-teal); }
+
+        /* Mobile: ditch the frame, embrace the chaos */
+        @media (max-width: 600px) {
+            body {
+                padding: 0;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .container {
+                max-width: none;
+                height: 100vh;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
+                display: flex;
+                flex-direction: column;
+            }
+            header {
+                flex-shrink: 0;
+                padding: 16px;
+            }
+            .ascii-title {
+                font-size: 9px;
+            }
+            .add-form {
+                flex-shrink: 0;
+            }
+            .todo-list {
+                flex: 1;
+                max-height: none;
+                overflow-y: auto;
+            }
+            .stats {
+                flex-shrink: 0;
+            }
+            .arch {
+                flex-shrink: 0;
+                border-radius: 0;
+            }
+            .delete {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 <body>
