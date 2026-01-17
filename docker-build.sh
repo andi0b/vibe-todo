@@ -104,17 +104,19 @@ build_service "todo-service" "todo.sh"
 build_service "frontend-service" "frontend.sh"
 build_service "api-gateway" "gateway.sh"
 
-# LLM service needs special handling (multiple files + model)
+# LLM service needs special handling (multiple files + model + AWK)
 build_llm_service() {
     local name="llm-service"
     local svc_dir="$SERVICE_DIR/$name"
 
-    log "Building $IMAGE_PREFIX-$name (the transformer in bash)"
+    log "Building $IMAGE_PREFIX-$name (the transformer in AWK)"
     step=0
     image_id=""
 
     build_layer FROM "$BASE_IMAGE"
-    build_layer RUN "apk add --no-cache bash netcat-openbsd"
+    # Need gawk for the transformer - busybox awk lacks features we need
+    # Symlink awk to gawk so scripts work without modification
+    build_layer RUN "apk add --no-cache bash netcat-openbsd gawk && ln -sf /usr/bin/gawk /usr/bin/awk"
     build_layer WORKDIR "/app"
 
     # Copy lib directory
