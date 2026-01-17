@@ -34,26 +34,32 @@ Six microservices. For a todo list. One of them is a neural network. Running on 
 
 We would've called it **Redish™** but Redis didn't grant us that. So instead, meet **Bashis** - a Redis-compatible key-value cache server written entirely in bash. It speaks actual RESP protocol and works with real `redis-cli`. Because writing our own caching layer was easier than adding a dependency.
 
-### LLM Service: A Transformer in Bash
+### LLM Service: A Transformer in AWK (yes, AWK)
 
-We implemented a GPT-style transformer from scratch. In bash. With fixed-point arithmetic and Taylor series approximations for activation functions. It generates text at approximately 0.07 tokens per second (14 seconds per token). This is not a typo. This is art.
+We implemented a GPT-style transformer from scratch. First in bash, then rewrote it in AWK because we asked "can we go faster?" instead of "should we stop?". The forward pass now runs in AWK with bash orchestration. Fixed-point arithmetic, Taylor series for exp/tanh, Newton's method for sqrt. The works.
+
+**Model specs:**
+- 64-dim embeddings, 4 attention heads, 3 transformer layers
+- 170K parameters (trained on Shakespeare)
+- ~4 seconds per token in AWK (vs ~14s in pure bash)
+- Includes Python reference implementation for verification
 
 **What it does:**
-- Full transformer architecture (embeddings, attention, FFN, layer norm)
-- Trained on Shakespeare (or whatever text you provide)
+- Full transformer architecture (embeddings, multi-head attention, FFN, layer norm)
+- Trained via PyTorch, inference in AWK/bash
 - Generates text that is... creative
-- Takes about 4 minutes to generate 5 tokens
+- Both AWK and Python implementations predict the same tokens
 
-**What we might use it for:**
-- We genuinely don't know yet
-- Maybe AI-powered todo suggestions?
-- Maybe it just sits there, generating Shakespeare
-- The point is it exists
+**Files:**
+- `lib/transformer.awk` - The entire forward pass in AWK
+- `lib/awk_forward.sh` - Bash wrapper for generation
+- `forward_reference.py` - Python implementation for comparison
+- `train_model.py` - PyTorch trainer that exports weights
 
 **Does it work?**
-- Sometimes. The math is correct (verified against PyTorch)
-- The output quality depends on your patience for training
-- It will definitely generate *something*
+- Yes. Verified against Python reference (same output tokens)
+- Output quality depends on training data and patience
+- It will definitely generate *something* Shakespeare-adjacent
 
 See [llm-architecture.md](llm-architecture.md) for the full technical deep-dive.
 
@@ -120,14 +126,15 @@ Yes, there are tests. We're not *complete* animals.
 
 - **HTTP/1.1 implementation from scratch** - because importing an HTTP library is for the weak
 - **RESP protocol implementation** - Bashis speaks Redis wire protocol, tested with real `redis-cli`
-- **GPT-style transformer in bash** - with fixed-point math, Taylor series, and Newton's method
+- **GPT-style transformer in AWK** - rewrote it from bash to AWK for 3x speedup (still absurd)
 - **Bash coprocesses** - bet you didn't know bash could do that
 - **Proper CORS headers** - we're chaotic, not incompetent
-- **JSON manipulation with regex** - just as God intended
+- **JSON manipulation with regex** - just as God intended (now handles colons in values!)
 - **Service-to-service communication** - over HTTP, via netcat, in bash, on localhost
 - **Caching with associative arrays** - `declare -A` is basically Redis if you squint
-- **Matrix multiplication in nested loops** - O(n³) and proud of it
+- **Matrix multiplication in nested loops** - O(n³) in AWK and proud of it
 - **Softmax via Taylor series** - because importing numpy is cheating
+- **Process group management** - proper Ctrl+C handling because we're professionals
 
 ## FAQ
 

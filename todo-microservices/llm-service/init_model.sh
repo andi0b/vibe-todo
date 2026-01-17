@@ -7,12 +7,12 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODEL_DIR="$SCRIPT_DIR/model"
 
-# Tiny model config (anything bigger and we'll be here all day)
-N_EMBD=48        # Embedding dimension (divisible by N_HEAD)
-N_HEAD=2         # Number of attention heads
-N_LAYER=2        # Number of transformer layers
+# Model config - slightly bigger because AWK makes us brave
+N_EMBD=64        # Embedding dimension (divisible by N_HEAD)
+N_HEAD=4         # Number of attention heads (more attention = more drama)
+N_LAYER=3        # Number of transformer layers (deeper thoughts)
 VOCAB_SIZE=256   # Byte-level vocabulary
-BLOCK_SIZE=32    # Maximum context length
+BLOCK_SIZE=64    # Maximum context length (more room for monologues)
 
 HEAD_DIM=$((N_EMBD / N_HEAD))
 HIDDEN_DIM=$((4 * N_EMBD))  # FFN hidden dimension

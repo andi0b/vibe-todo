@@ -226,9 +226,11 @@ handle() {
 
 serve() {
     coproc NC { nc -l -p "$PORT"; }
+    local nc_pid=$!
     handle <&"${NC[0]}" >&"${NC[1]}"
     exec {NC[0]}>&- {NC[1]}>&- 2>/dev/null
-    wait $NC_PID 2>/dev/null
+    kill "$nc_pid" 2>/dev/null
+    wait "$nc_pid" 2>/dev/null
 }
 
 echo "Bashis (Redis clone) on port $PORT - because C is for cowards"

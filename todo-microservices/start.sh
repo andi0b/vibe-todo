@@ -2,7 +2,8 @@
 # Start all microservices for the Bash Todo App
 
 BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
-PIDS=()
+PID_DIR="$BASE_DIR/.pids"
+mkdir -p "$PID_DIR"
 
 echo "======================================"
 echo "   Bash Todo - Microservices Stack"
@@ -12,12 +13,26 @@ echo ""
 cleanup() {
     echo ""
     echo "Shutting down services..."
-    for pid in "${PIDS[@]}"; do
-        kill "$pid" 2>/dev/null
-        wait "$pid" 2>/dev/null
+
+    # Kill all services using their PID files
+    for pidfile in "$PID_DIR"/*.pid; do
+        [[ -f "$pidfile" ]] || continue
+        local pid=$(cat "$pidfile" 2>/dev/null)
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            # Kill the process group to get all children
+            kill -TERM -"$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null
+        fi
+        rm -f "$pidfile"
     done
-    pkill -f "nc -l -p 800[0-4]" 2>/dev/null
-    pkill -f "nc -l -p 6379" 2>/dev/null
+
+    # Give processes time to exit gracefully
+    sleep 0.5
+
+    # Force kill any remaining nc processes on our ports
+    pkill -9 -f "nc -l -p 800[0-4]" 2>/dev/null
+    pkill -9 -f "nc -l -p 6379" 2>/dev/null
+
+    rm -rf "$PID_DIR"
     echo "All services stopped."
     exit 0
 }
@@ -26,10 +41,13 @@ trap cleanup EXIT INT TERM
 start_service() {
     local name="$1"
     local script="$2"
+    local pidname="$3"
 
     echo "Starting $name..."
-    bash "$script" &
-    PIDS+=($!)
+    # Start in a new process group (setsid) so we can kill the whole group
+    setsid bash "$script" &
+    local pid=$!
+    echo "$pid" > "$PID_DIR/${pidname}.pid"
     sleep 0.3
 }
 
@@ -38,12 +56,12 @@ mkdir -p "$BASE_DIR/data"
 [[ ! -s "$BASE_DIR/data/todos.json" ]] && echo '[]' > "$BASE_DIR/data/todos.json"
 
 # Start services in order (Bashis before Todo since Todo uses it for caching)
-DATA_DIR="$BASE_DIR/data" start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh"
-start_service "Bashis Cache (port 6379)" "$BASE_DIR/bashis-service/bashis.sh"
-start_service "Todo Service (port 8002)" "$BASE_DIR/todo-service/todo.sh"
-start_service "Frontend Service (port 8003)" "$BASE_DIR/frontend-service/frontend.sh"
-start_service "LLM Service (port 8004)" "$BASE_DIR/llm-service/llm.sh"
-start_service "API Gateway (port 8000)" "$BASE_DIR/api-gateway/gateway.sh"
+DATA_DIR="$BASE_DIR/data" start_service "Storage Service (port 8001)" "$BASE_DIR/storage-service/storage.sh" "storage"
+start_service "Bashis Cache (port 6379)" "$BASE_DIR/bashis-service/bashis.sh" "bashis"
+start_service "Todo Service (port 8002)" "$BASE_DIR/todo-service/todo.sh" "todo"
+start_service "Frontend Service (port 8003)" "$BASE_DIR/frontend-service/frontend.sh" "frontend"
+start_service "LLM Service (port 8004)" "$BASE_DIR/llm-service/llm.sh" "llm"
+start_service "API Gateway (port 8000)" "$BASE_DIR/api-gateway/gateway.sh" "gateway"
 
 echo ""
 echo "======================================"

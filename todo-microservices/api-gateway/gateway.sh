@@ -41,19 +41,23 @@ respond() {
 handle() {
     local line method path len=0 body=""
 
-    read -r line || return
+    read -r -t 5 line || return
     [[ -z "$line" ]] && return
+    line="${line%$'\r'}"
 
     method="${line%% *}"
     path="${line#* }"; path="${path%% *}"
 
-    while IFS= read -r header; do
+    while IFS= read -r -t 2 header; do
         header="${header%$'\r'}"
         [[ -z "$header" ]] && break
         [[ "$header" =~ Content-Length:\ *([0-9]+) ]] && len="${BASH_REMATCH[1]}"
     done
 
-    [[ $len -gt 0 ]] && read -r -n "$len" body
+    if [[ $len -gt 0 ]]; then
+        read -r -t 10 -n "$len" body
+        read -r -t 0.1 _ 2>/dev/null || true
+    fi
 
     # CORS preflight
     [[ "$method" == "OPTIONS" ]] && { respond "200 OK" "text/plain" ""; return; }
@@ -91,9 +95,11 @@ handle() {
 
 serve() {
     coproc NC { nc -l -p "$PORT"; }
+    local nc_pid=$!
     handle <&"${NC[0]}" >&"${NC[1]}"
     exec {NC[0]}>&- {NC[1]}>&- 2>/dev/null
-    wait $NC_PID 2>/dev/null
+    kill "$nc_pid" 2>/dev/null
+    wait "$nc_pid" 2>/dev/null
 }
 
 echo "API Gateway on port $PORT"

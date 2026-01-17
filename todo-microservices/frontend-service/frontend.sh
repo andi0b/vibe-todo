@@ -323,14 +323,15 @@ respond() {
 handle() {
     local line method path
 
-    read -r line || return
+    read -r -t 5 line || return
     [[ -z "$line" ]] && return
+    line="${line%$'\r'}"
 
     method="${line%% *}"
     path="${line#* }"; path="${path%% *}"
 
-    # Consume headers
-    while IFS= read -r header; do
+    # Consume headers with timeout
+    while IFS= read -r -t 2 header; do
         header="${header%$'\r'}"
         [[ -z "$header" ]] && break
     done
@@ -344,9 +345,11 @@ handle() {
 
 serve() {
     coproc NC { nc -l -p "$PORT"; }
+    local nc_pid=$!
     handle <&"${NC[0]}" >&"${NC[1]}"
     exec {NC[0]}>&- {NC[1]}>&- 2>/dev/null
-    wait $NC_PID 2>/dev/null
+    kill "$nc_pid" 2>/dev/null
+    wait "$nc_pid" 2>/dev/null
 }
 
 echo "Frontend Service on port $PORT"

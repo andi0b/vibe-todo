@@ -1,5 +1,5 @@
-n_embd=48
-n_head=2
-n_layer=2
+n_embd=64
+n_head=4
+n_layer=3
 vocab_size=256
-block_size=32
+block_size=64

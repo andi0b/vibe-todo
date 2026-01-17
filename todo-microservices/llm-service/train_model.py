@@ -22,11 +22,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # === Model Config (matches our bash implementation) ===
-N_EMBD = 48
-N_HEAD = 2
-N_LAYER = 2
-VOCAB_SIZE = 256  # Byte-level
-BLOCK_SIZE = 32
+# Bumped slightly because we believe in the power of AWK
+N_EMBD = 64      # was 48 - more dimensions, more vibes
+N_HEAD = 4       # was 2  - attention is all you need (x4)
+N_LAYER = 3      # was 2  - deeper thoughts
+VOCAB_SIZE = 256 # Byte-level (keep it simple)
+BLOCK_SIZE = 64  # was 32 - longer context for Shakespeare's monologues
 DROPOUT = 0.1
 
 # === Fixed-point scale (must match bash) ===

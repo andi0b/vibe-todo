@@ -4,3 +4,8 @@
 # Ignore temp files
 *.tmp
 *.pipe
+
+# LLM service
+todo-microservices/llm-service/input.txt
+todo-microservices/llm-service/.stash/
+todo-microservices/.pids/

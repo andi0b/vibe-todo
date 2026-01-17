@@ -1,14 +1,15 @@
 #!/bin/bash
-# LLM Service - A transformer inference engine in bash
+# LLM Service - A transformer inference engine in AWK (wrapped in bash)
 # Listens on port 8004
-# "We trained the model in PyTorch and ran inference in bash because we are agents of chaos"
+# "We trained the model in PyTorch, wrote inference in bash, then rewrote it in AWK for speed"
+# "The architects have left the building"
 
 PORT="${PORT:-8004}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 MODEL_DIR="${MODEL_DIR:-$SCRIPT_DIR/model}"
 
-# Source our beautiful libraries
-source "$SCRIPT_DIR/lib/transformer.sh"
+# Source the AWK-powered transformer (the bash libs still exist for the math functions)
+source "$SCRIPT_DIR/lib/awk_forward.sh"
 
 # Model state
 MODEL_LOADED=0
@@ -30,12 +31,27 @@ load_model_if_exists() {
 }
 
 # Extract JSON field value (our cursed JSON parser)
+# Now handles colons in values because Shakespeare apparently uses them
 json_get() {
     local json="$1"
     local field="$2"
-    # Handle both "field": "value" and "field": number
-    echo "$json" | grep -o "\"$field\"[[:space:]]*:[[:space:]]*[^,}]*" | \
-        sed 's/.*:[[:space:]]*//; s/^"//; s/"$//'
+
+    # For string values: match "field":"value" or "field": "value"
+    # Use a more specific pattern that handles colons in values
+    local result
+    result=$(echo "$json" | grep -oE "\"$field\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | head -1)
+    if [[ -n "$result" ]]; then
+        # Extract just the value part (after first colon, strip quotes)
+        echo "$result" | sed 's/^[^:]*:[[:space:]]*"//; s/"$//'
+        return
+    fi
+
+    # For numeric values: match "field": 123 or "field":123
+    result=$(echo "$json" | grep -oE "\"$field\"[[:space:]]*:[[:space:]]*[0-9]+" | head -1)
+    if [[ -n "$result" ]]; then
+        echo "$result" | sed 's/^[^:]*:[[:space:]]*//'
+        return
+    fi
 }
 
 # Build JSON response
@@ -48,19 +64,29 @@ json_response() {
 handle() {
     local line method path len=0 body="" status body_out content_type="application/json"
 
-    read -r line || return
+    # Read with timeout to prevent hanging
+    read -r -t 5 line || return
     [[ -z "$line" ]] && return
+
+    # Strip carriage return
+    line="${line%$'\r'}"
 
     method="${line%% *}"
     path="${line#* }"; path="${path%% *}"
 
-    while IFS= read -r header; do
+    # Read headers with timeout
+    while IFS= read -r -t 2 header; do
         header="${header%$'\r'}"
         [[ -z "$header" ]] && break
         [[ "$header" =~ Content-Length:\ *([0-9]+) ]] && len="${BASH_REMATCH[1]}"
     done
 
-    [[ $len -gt 0 ]] && read -r -n "$len" body
+    # Read body if present (with timeout)
+    if [[ $len -gt 0 ]]; then
+        read -r -t 30 -n "$len" body
+        # Drain any trailing newlines/whitespace
+        read -r -t 0.1 _ 2>/dev/null || true
+    fi
 
     case "$method $path" in
         "GET /health")
@@ -183,15 +209,25 @@ handle() {
 }
 
 serve() {
+    # Start netcat listener as a coprocess
     coproc NC { nc -l -p "$PORT"; }
+    local nc_pid=$!
+
+    # Handle the request
     handle <&"${NC[0]}" >&"${NC[1]}"
+
+    # Clean up: close file descriptors and wait for nc to exit
     exec {NC[0]}>&- {NC[1]}>&- 2>/dev/null
-    wait $NC_PID 2>/dev/null
+
+    # Kill the nc process if it's still running (prevents zombie connections)
+    kill "$nc_pid" 2>/dev/null
+    wait "$nc_pid" 2>/dev/null
 }
 
 # Startup
 echo "=========================================="
-echo " LLM Service - Bash Transformer Edition"
+echo " LLM Service - AWK Transformer Edition"
+echo " (bash for orchestration, AWK for math)"
 echo "=========================================="
 echo
 echo "Listening on port $PORT"
@@ -209,7 +245,7 @@ echo "  POST /detokenize  - Convert tokens to text"
 echo "  GET  /config      - Model configuration"
 echo "  POST /reload      - Reload model from disk"
 echo
-echo "Ready for inference. This will be slow. That's the point."
+echo "Ready for inference. AWK-powered = faster than pure bash. Still absurd."
 echo
 
 trap "exit 0" INT TERM
