@@ -24,7 +24,7 @@ Someone asked an AI to vibe-code a todo app and it chose violence.
                         │
                         ▼
                 ┌─────────────────┐
-                │ LLM Svc:8004    │  ← A transformer. In bash. Yes, really.
+                │ LLM Svc:8004    │  ← A transformer. In AWK. Yes, really.
                 └─────────────────┘
 ```
 
@@ -36,30 +36,23 @@ We would've called it **Redish™** but Redis didn't grant us that. So instead, 
 
 ### LLM Service: A Transformer in AWK (yes, AWK)
 
-We implemented a GPT-style transformer from scratch. First in bash, then rewrote it in AWK because we asked "can we go faster?" instead of "should we stop?". The forward pass now runs in AWK with bash orchestration. Fixed-point arithmetic, Taylor series for exp/tanh, Newton's method for sqrt. The works.
-
-**Model specs:**
-- 64-dim embeddings, 4 attention heads, 3 transformer layers
-- 170K parameters (trained on Shakespeare)
-- ~4 seconds per token in AWK (vs ~14s in pure bash)
-- Includes Python reference implementation for verification
+We implemented a GPT-style transformer from scratch. First in bash, then rewrote it in AWK because we asked "can we go faster?" instead of "should we stop?". Fixed-point arithmetic and Taylor series approximations for activation functions. It generates text at approximately one token every few seconds. This is art.
 
 **What it does:**
-- Full transformer architecture (embeddings, multi-head attention, FFN, layer norm)
-- Trained via PyTorch, inference in AWK/bash
+- Full transformer architecture (embeddings, attention, FFN, layer norm)
+- Trained on Shakespeare (or whatever text you provide)
 - Generates text that is... creative
-- Both AWK and Python implementations predict the same tokens
 
-**Files:**
-- `lib/transformer.awk` - The entire forward pass in AWK
-- `lib/awk_forward.sh` - Bash wrapper for generation
-- `forward_reference.py` - Python implementation for comparison
-- `train_model.py` - PyTorch trainer that exports weights
+**What we might use it for:**
+- We genuinely don't know yet
+- Maybe AI-powered todo suggestions?
+- Maybe it just sits there, generating Shakespeare
+- The point is it exists
 
 **Does it work?**
-- Yes. Verified against Python reference (same output tokens)
-- Output quality depends on training data and patience
-- It will definitely generate *something* Shakespeare-adjacent
+- Yes, verified against Python reference implementation
+- Output quality depends on your patience for training
+- It will definitely generate *something*
 
 See [llm-architecture.md](llm-architecture.md) for the full technical deep-dive.
 
@@ -70,7 +63,7 @@ See [llm-architecture.md](llm-architecture.md) for the full technical deep-dive.
 - Delete todos (disruptive innovation)
 - A beautiful purple gradient UI (the only thing that makes sense here)
 - **Redis-compatible caching layer** written in bash (Bashis) - works with actual `redis-cli`
-- **LLM inference engine** written in bash - a GPT-style transformer that runs at geological speeds
+- **LLM inference engine** in AWK - a GPT-style transformer that runs at geological speeds
 - File locking with `flock` because race conditions in your bash todo app would be embarrassing
 - JSON parsing with `sed` and `grep` because who needs `jq`
 - Matrix multiplication in bash arrays because linear algebra doesn't require C
@@ -126,7 +119,7 @@ Yes, there are tests. We're not *complete* animals.
 
 - **HTTP/1.1 implementation from scratch** - because importing an HTTP library is for the weak
 - **RESP protocol implementation** - Bashis speaks Redis wire protocol, tested with real `redis-cli`
-- **GPT-style transformer in AWK** - rewrote it from bash to AWK for 3x speedup (still absurd)
+- **GPT-style transformer in AWK** - with fixed-point math, Taylor series, and Newton's method
 - **Bash coprocesses** - bet you didn't know bash could do that
 - **Proper CORS headers** - we're chaotic, not incompetent
 - **JSON manipulation with regex** - just as God intended (now handles colons in values!)
